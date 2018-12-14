@@ -11,17 +11,30 @@ services:
       - db-data:/var/lib/mysql
       - ./docker-logs/mysql:/var/log/mysql
 
-  web:
+  php:
     build: ./
-    image: magento2-web
     ports:
-      - "80:80"
+      - "9000:9000"
     links:
       - db
     volumes:
-      - ./:/var/www/html:cached
-      - ./docker-logs/apache2:/var/log/apache2
+      - ./:/srv/www:cached
     depends_on:
       - db
+
+  nginx:
+    image: ipascual/docker-magento2-nginx
+    ports:
+      - "2080:80"
+    environment:
+      PHP_HOST: php
+      UPSTREAM_PORT: 9000
+    links:
+      - php
+    volumes:
+      - ./:/srv/www:cached
+    depends_on:
+      - php
+
 volumes:
   db-data:
